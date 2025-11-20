@@ -58,7 +58,7 @@ public class ProviderProfileServiceImpl implements ProviderProfileService{
 
         //creating providerProfile
         ProviderProfile registerProfile = new ProviderProfile();
-        registerProfile.setUser_id(user.getId());
+        registerProfile.setUserId(user.getId());
         registerProfile.setBusinessName(request.getProviderProfile().getBusinessName());
         registerProfile.setAddress(request.getProviderProfile().getAddress());
         registerProfile.setPhone(request.getProviderProfile().getPhone());

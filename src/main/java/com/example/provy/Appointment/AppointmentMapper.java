@@ -8,7 +8,7 @@ import java.util.List;
 public interface AppointmentMapper {
 
     @Select("SELECT * FROM appointment WHERE provider_profile_id = #{provider_id}")
-    @Results({
+    @Results(id = "AppointmentResultMap",value = {
             @Result(property = "id", column = "id"),
             @Result(property = "userId", column = "user_id"),
             @Result(property = "providerOfferingId", column = "provider_offering_id"),
@@ -20,6 +20,7 @@ public interface AppointmentMapper {
     })
     List<Appointment> getAppointmentsByProvider(@Param("provider_id") Long id);
     @Select("SELECT * FROM appointment WHERE id = #{id}")
+    @ResultMap("AppointmentResultMap")
     Appointment getById(@Param("id") Long id);
 
     @Insert("INSERT INTO appointment(user_id,provider_offering_id,provider_profile_id,start_time,end_time,date,appointment_status) VALUES" +

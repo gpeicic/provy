@@ -1,5 +1,8 @@
 package com.example.provy.Appointment;
 
+import com.example.provy.Appointment.DTO.AppointmentDTOMapper;
+import com.example.provy.Appointment.DTO.AppointmentRequestDTO;
+import com.example.provy.Appointment.DTO.AppointmentResponseDTO;
 import com.example.provy.ProviderOffering.ProviderOffering;
 import com.example.provy.ProviderOffering.ProviderOfferingMapper;
 import org.springframework.context.annotation.Primary;
@@ -14,31 +17,36 @@ import java.util.List;
 @Service
 public class AppointmentServiceImpl implements AppointmentService{
     private final AppointmentMapper appointmentMapper;
+    private final AppointmentDTOMapper appointmentDTOMapper;
     private final ProviderOfferingMapper providerOfferingMapper;
 
 
-    public AppointmentServiceImpl(AppointmentMapper appointmentMapper, ProviderOfferingMapper providerOfferingMapper){
+    public AppointmentServiceImpl(AppointmentMapper appointmentMapper, ProviderOfferingMapper providerOfferingMapper,AppointmentDTOMapper appointmentDTOMapper){
         this.appointmentMapper = appointmentMapper;
         this.providerOfferingMapper = providerOfferingMapper;
+        this.appointmentDTOMapper = appointmentDTOMapper;
     }
     @Override
-    public Appointment getById(Long id){
-        return appointmentMapper.getById(id);
+    public AppointmentResponseDTO getById(Long id){
+        return appointmentDTOMapper.toResponseDTO(appointmentMapper.getById(id));
     }
     @Override
-    public void bookAppointment(Appointment appointment){
-       ProviderOffering providerOffering = providerOfferingMapper.getById(appointment.getProviderOfferingId());
-       LocalTime calculatedTime = appointment.getStartTime().plusMinutes(providerOffering.getDurationInMinutes());
-       appointment.setEndTime(calculatedTime);
+    public void bookAppointment(AppointmentRequestDTO appointmentRequestDTO){
+        ProviderOffering providerOffering = providerOfferingMapper.getById(appointmentRequestDTO.getProviderOfferingId());
+        LocalTime endTime = appointmentRequestDTO.getStartTime().plusMinutes(providerOffering.getDurationInMinutes());
 
-       if(!isAppointmentAvailable(appointment)){
-           appointment.setAppointmentStatus(AppointmentStatus.REJECTED);
-       }
-       else{
-           appointment.setAppointmentStatus(AppointmentStatus.CONFIRMED);
-       }
+        Appointment appointment = appointmentDTOMapper.toEntity(
+                appointmentRequestDTO,
+                providerOffering.getProviderProfileId(),
+                endTime
+        );
 
-       appointmentMapper.bookAppointment(appointment);
+        AppointmentStatus status = isAppointmentAvailable(appointment)
+                ? AppointmentStatus.CONFIRMED
+                : AppointmentStatus.REJECTED;
+
+        appointment.setAppointmentStatus(status);
+
     }
     @Override
     public Boolean isAppointmentAvailable(Appointment appointment){

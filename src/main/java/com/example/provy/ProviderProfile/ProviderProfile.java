@@ -3,7 +3,7 @@ package com.example.provy.ProviderProfile;
 public class ProviderProfile {
 
     private Long id;
-    private Long user_id;
+    private Long userId;
     private String businessName;
     private String address;
     private String phone;
@@ -12,7 +12,7 @@ public class ProviderProfile {
 
     public ProviderProfile(Long id, Long userId, String businessName, String address, String phone, String description) {
         this.id = id;
-        this.user_id = userId;
+        this.userId = userId;
         this.businessName = businessName;
         this.address = address;
         this.phone = phone;
@@ -31,12 +31,12 @@ public class ProviderProfile {
         this.id = id;
     }
 
-    public Long getUser_id() {
-        return user_id;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUser_id(Long user_id) {
-        this.user_id = user_id;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getBusinessName() {

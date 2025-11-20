@@ -28,7 +28,7 @@ public class ProviderOfferingDTOMapper {
     }
 
     public ProviderOfferingResponseDTO toResponseDTO(ProviderOffering offering){
-        ProviderOfferingResponseDTO dto = new ProviderOfferingResponseDTO(
+        return new ProviderOfferingResponseDTO(
                 offering.getId(),
                 offering.getProviderProfileId(),
                 offering.getName(),
@@ -36,6 +36,5 @@ public class ProviderOfferingDTOMapper {
                 offering.getPrice(),
                 offering.getDurationInMinutes()
         );
-        return dto;
     }
 }

@@ -31,26 +31,26 @@ public class ProviderOfferingResponseDTO implements ProviderOfferingDTO {
 
     @Override
     public String getName() {
-        return null;
+        return name;
     }
 
     @Override
     public String getDescription() {
-        return null;
+        return description;
     }
 
     @Override
     public BigDecimal getPrice() {
-        return null;
+        return price;
     }
 
     @Override
     public Long getProviderProfileId() {
-        return null;
+        return providerProfileId;
     }
 
     @Override
     public Integer getDurationInMinutes() {
-        return null;
+        return durationInMinutes;
     }
 }

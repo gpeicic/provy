@@ -17,7 +17,7 @@ public class ProviderProfileDTOMapper {
     }
     public ProviderProfile toEntity(ProviderProfileRequestDTO dto){
         ProviderProfile profile = new ProviderProfile();
-        profile.setUser_id(dto.getUser_id());
+        profile.setUserId(dto.getUser_id());
         profile.setDescription(dto.getDescription());
         profile.setStatus(dto.getStatus());
         profile.setPhone(dto.getPhone());
@@ -29,7 +29,7 @@ public class ProviderProfileDTOMapper {
 
     public ProviderProfileRequestDTO toRequestDTO(ProviderProfile profile){
         ProviderProfileRequestDTO dto = new ProviderProfileRequestDTO();
-        dto.setUser_id(profile.getUser_id());
+        dto.setUser_id(profile.getUserId());
         dto.setAddress(profile.getAddress());
         dto.setPhone(profile.getPhone());
         dto.setBusinessName(profile.getBusinessName());
@@ -41,9 +41,10 @@ public class ProviderProfileDTOMapper {
     public ProviderProfileResponseDTO toResponseDTO(ProviderProfile profile) {
         ProviderProfileResponseDTO dto = new ProviderProfileResponseDTO();
 
-        dto.setUser(userService.getUserById(profile.getUser_id()));
+        dto.setUser(userService.getUserById(profile.getUserId()));
 
         ProviderProfileRequestDTO profileDTO = new ProviderProfileRequestDTO();
+        profileDTO.setUser_id(profile.getUserId());
         profileDTO.setBusinessName(profile.getBusinessName());
         profileDTO.setAddress(profile.getAddress());
         profileDTO.setPhone(profile.getPhone());

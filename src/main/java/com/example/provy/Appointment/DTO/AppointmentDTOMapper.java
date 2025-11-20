@@ -4,9 +4,11 @@ import com.example.provy.Appointment.Appointment;
 import com.example.provy.Appointment.AppointmentStatus;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalTime;
+
 @Component
 public class AppointmentDTOMapper {
-    public Appointment toEntity(AppointmentRequestDTO dto, Long providerProfileId, Integer durationInMinutes){
+    public Appointment toEntity(AppointmentRequestDTO dto, Long providerProfileId, LocalTime endTime){
         Appointment appointment = new Appointment();
         appointment.setUserId(dto.getUserId());
         appointment.setProviderOfferingId(dto.getProviderOfferingId());
@@ -14,7 +16,7 @@ public class AppointmentDTOMapper {
         appointment.setDate(dto.getDate());
         appointment.setStartTime(dto.getStartTime());
 
-        appointment.setEndTime(dto.getStartTime().plusMinutes(durationInMinutes));
+        appointment.setEndTime(endTime);
         appointment.setAppointmentStatus(AppointmentStatus.CONFIRMED);
         return appointment;
     }

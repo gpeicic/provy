@@ -1,6 +1,5 @@
 package com.example.provy.ProviderOffering;
 
-
 import java.math.BigDecimal;
 
 public class ProviderOffering {

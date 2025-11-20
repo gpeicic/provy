@@ -14,7 +14,7 @@ public interface ProviderProfileMapper {
             "WHERE id = #{id}")
     @Results({
             @Result(property = "id", column = "id"),
-            @Result(property = "user_id", column = "user_id"),
+            @Result(property = "userId", column = "user_id"),
             @Result(property = "businessName", column = "business_name"),
             @Result(property = "address", column = "address"),
             @Result(property = "phone", column = "phone"),

@@ -19,6 +19,8 @@ public class ProviderOfferingServiceImpl implements ProviderOfferingService {
     }
     @Override
     public ProviderOfferingResponseDTO getById(Long id){
+        ProviderOffering offering = providerOfferingMapper.getById(id);
+        System.out.println(offering.getDescription() + " " + offering.getName());
         ProviderOfferingResponseDTO providerOfferingResponse =providerOfferingDTOMapper.toResponseDTO(providerOfferingMapper.getById(id));
 
         return providerOfferingResponse;

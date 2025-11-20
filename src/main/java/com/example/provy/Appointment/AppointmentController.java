@@ -1,5 +1,7 @@
 package com.example.provy.Appointment;
 
+import com.example.provy.Appointment.DTO.AppointmentRequestDTO;
+import com.example.provy.Appointment.DTO.AppointmentResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,13 +16,13 @@ public class AppointmentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Appointment> getById(@PathVariable Long id){
-        Appointment appointment = appointmentService.getById(id);
+    public ResponseEntity<AppointmentResponseDTO> getById(@PathVariable Long id){
+        AppointmentResponseDTO appointment = appointmentService.getById(id);
         return ResponseEntity.ok(appointment);
     }
 
     @PostMapping
-    public ResponseEntity<Void> bookAppointment(@RequestBody Appointment appointment){
+    public ResponseEntity<Void> bookAppointment(@RequestBody AppointmentRequestDTO appointment){
 
         appointmentService.bookAppointment(appointment);
       return ResponseEntity.status(HttpStatus.CREATED).build();
