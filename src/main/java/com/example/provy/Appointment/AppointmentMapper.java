@@ -28,5 +28,5 @@ public interface AppointmentMapper {
     void bookAppointment(Appointment appointment);
 
     @Delete("DELETE FROM appointment WHERE id = #{id}")
-    void deleteAppointmentById(@Param("id") Long id);
+    int deleteAppointmentById(@Param("id") Long id);
 }

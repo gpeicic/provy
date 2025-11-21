@@ -3,8 +3,12 @@ package com.example.provy.Appointment;
 import com.example.provy.Appointment.DTO.AppointmentDTOMapper;
 import com.example.provy.Appointment.DTO.AppointmentRequestDTO;
 import com.example.provy.Appointment.DTO.AppointmentResponseDTO;
+import com.example.provy.Appointment.Exception.AppointmentNotFoundException;
+import com.example.provy.Appointment.Exception.InvalidAppointmentTimeException;
+import com.example.provy.Common.Validation.ValidPassword;
 import com.example.provy.ProviderOffering.ProviderOffering;
 import com.example.provy.ProviderOffering.ProviderOfferingMapper;
+import com.example.provy.ProviderProfile.Exception.ProviderNotFoundException;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,11 +32,23 @@ public class AppointmentServiceImpl implements AppointmentService{
     }
     @Override
     public AppointmentResponseDTO getById(Long id){
-        return appointmentDTOMapper.toResponseDTO(appointmentMapper.getById(id));
+        Appointment appointment = appointmentMapper.getById(id);
+        if(appointment == null){
+            throw new AppointmentNotFoundException(id);
+        }
+        return appointmentDTOMapper.toResponseDTO(appointment);
     }
     @Override
     public void bookAppointment(AppointmentRequestDTO appointmentRequestDTO){
         ProviderOffering providerOffering = providerOfferingMapper.getById(appointmentRequestDTO.getProviderOfferingId());
+
+        if(providerOffering == null){
+            throw new ProviderNotFoundException(appointmentRequestDTO.getProviderOfferingId());
+        }
+        if(appointmentRequestDTO.getStartTime() == null){
+            throw new InvalidAppointmentTimeException("Appointment start time must be set");
+        }
+
         LocalTime endTime = appointmentRequestDTO.getStartTime().plusMinutes(providerOffering.getDurationInMinutes());
 
         Appointment appointment = appointmentDTOMapper.toEntity(
@@ -41,12 +57,12 @@ public class AppointmentServiceImpl implements AppointmentService{
                 endTime
         );
 
-        AppointmentStatus status = isAppointmentAvailable(appointment)
-                ? AppointmentStatus.CONFIRMED
-                : AppointmentStatus.REJECTED;
-
-        appointment.setAppointmentStatus(status);
-
+        if(!isAppointmentAvailable(appointment)){
+            throw new InvalidAppointmentTimeException("The appointment slot from " + appointment.getStartTime()
+                    + " to " + appointment.getEndTime() + " is already taken");
+        }
+        appointment.setAppointmentStatus(AppointmentStatus.CONFIRMED);
+        appointmentMapper.bookAppointment(appointment);
     }
     @Override
     public Boolean isAppointmentAvailable(Appointment appointment){
@@ -66,6 +82,9 @@ public class AppointmentServiceImpl implements AppointmentService{
     }
     @Override
     public void deleteAppointmentById(Long id){
-        appointmentMapper.deleteAppointmentById(id);
+       int deleted = appointmentMapper.deleteAppointmentById(id);
+       if(deleted == 0){
+           throw new AppointmentNotFoundException(id);
+       }
     }
 }

@@ -1,6 +1,8 @@
 package com.example.provy.ProviderOffering;
 
 import org.apache.ibatis.annotations.*;
+import org.springframework.security.core.parameters.P;
+
 @Mapper
 public interface ProviderOfferingMapper {
 
@@ -15,6 +17,9 @@ public interface ProviderOfferingMapper {
     @Select("SELECT * FROM provider_offering WHERE id = #{id}")
     ProviderOffering getById(@Param("id") Long id);
 
+    @Select("SELECT COUNT(*) FROM provider_offering WHERE provider_id =#{providerId} AND name = #{name}")
+    int getCountByProviderIdAndName(@Param("providerId") Long providerId, @Param("name") String name);
+
     // Reuse result map here if želiš
     @Select("SELECT * FROM provider_offering WHERE provider_profile_id = #{id}")
     @ResultMap("ProviderOfferingResult")
@@ -26,5 +31,5 @@ public interface ProviderOfferingMapper {
     void registerProviderOffering(ProviderOffering providerOffering);
 
     @Delete("DELETE FROM provider_offering WHERE id = #{id}")
-    void deleteProviderOffering(@Param("id") Long id);
+    int deleteProviderOffering(@Param("id") Long id);
 }

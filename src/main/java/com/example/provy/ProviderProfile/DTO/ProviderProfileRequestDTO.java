@@ -14,25 +14,16 @@ public class ProviderProfileRequestDTO {
     private String phone;
     @NotNull
     private String description;
-    @NotNull
-    private ProviderStatus status;
+
     public ProviderProfileRequestDTO(){}
 
-    public ProviderProfileRequestDTO(Long user_id, String businessName, String address, String phone, String description, ProviderStatus providerStatus) {
+    public ProviderProfileRequestDTO(Long user_id, String businessName, String address, String phone, String description) {
         this.user_id = user_id;
         this.businessName = businessName;
         this.address = address;
         this.phone = phone;
         this.description = description;
-        this.status = providerStatus;
-    }
 
-    public ProviderStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ProviderStatus status) {
-        this.status = status;
     }
 
     public Long getUser_id() {

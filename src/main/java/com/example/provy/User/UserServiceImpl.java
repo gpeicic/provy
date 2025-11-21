@@ -4,6 +4,9 @@ import com.example.provy.Role.RoleMapper;
 import com.example.provy.User.DTO.UserDTOMapper;
 import com.example.provy.User.DTO.UserRequestDTO;
 import com.example.provy.User.DTO.UserResponseDTO;
+import com.example.provy.User.Exception.RoleNotFoundException;
+import com.example.provy.User.Exception.UserAlreadyExistsAException;
+import com.example.provy.User.Exception.UserNotFoundException;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,18 +26,29 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public UserResponseDTO getUserById(Long id){
-        return userDTOMapper.toResponseDTO(userMapper.getUserById(id));
+        User user = userMapper.getUserById(id);
+        if(user == null){
+            throw new UserNotFoundException(id);
+        }
+        return userDTOMapper.toResponseDTO(user);
     }
     @Override
     public void registerUser(UserRequestDTO userRequestDTO){
+        if(userMapper.getEmailByEmail(userRequestDTO.getEmail()) != null){
+            throw new UserAlreadyExistsAException(userRequestDTO.getEmail());
+        }
         User user = userDTOMapper.toEntity(userRequestDTO);
         userMapper.registerUser(user);
 
         Long roleUserId = roleMapper.getRoleIdByName("ROLE_USER");
+        if(roleUserId == null){
+            throw new RoleNotFoundException("ROLE_USER");
+        }
         userMapper.insertUserRole(user.getId(),roleUserId);
     }
     @Override
     public void deleteUser(Long id){
-        userMapper.deleteUserById(id);
+        int deleted = userMapper.deleteUserById(id);
+        if(deleted == 0) throw new UserNotFoundException(id);
     }
 }

@@ -3,6 +3,8 @@ package com.example.provy.ProviderOffering;
 import com.example.provy.ProviderOffering.DTO.ProviderOfferingDTOMapper;
 import com.example.provy.ProviderOffering.DTO.ProviderOfferingRequestDTO;
 import com.example.provy.ProviderOffering.DTO.ProviderOfferingResponseDTO;
+import com.example.provy.ProviderOffering.Exception.ProviderOfferingAlreadyExistsException;
+import com.example.provy.ProviderOffering.Exception.ProviderOfferingNotFoundException;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,23 +22,34 @@ public class ProviderOfferingServiceImpl implements ProviderOfferingService {
     @Override
     public ProviderOfferingResponseDTO getById(Long id){
         ProviderOffering offering = providerOfferingMapper.getById(id);
-        System.out.println(offering.getDescription() + " " + offering.getName());
+        if(offering == null){
+            throw new ProviderOfferingNotFoundException();
+        }
         ProviderOfferingResponseDTO providerOfferingResponse =providerOfferingDTOMapper.toResponseDTO(providerOfferingMapper.getById(id));
-
         return providerOfferingResponse;
     }
     @Override
     public ProviderOfferingResponseDTO getByProviderProfileId(Long id){
         ProviderOfferingResponseDTO providerOfferingResponse = providerOfferingDTOMapper.toResponseDTO(providerOfferingMapper.getByProviderProfileId(id));
+        if(providerOfferingResponse == null){
+            throw new ProviderOfferingNotFoundException();
+        }
 
         return providerOfferingResponse;
     }
     @Override
     public void registerProviderOffering(ProviderOfferingRequestDTO providerOfferingRequest){
+        if(providerOfferingMapper.getCountByProviderIdAndName(providerOfferingRequest.getProviderProfileId(), providerOfferingRequest.getName()) == 0){
+            throw new ProviderOfferingAlreadyExistsException(providerOfferingRequest.getName());
+        }
+
         providerOfferingMapper.registerProviderOffering(providerOfferingDTOMapper.toEntity(providerOfferingRequest));
     }
     @Override
     public void deleteProviderOffering(Long id){
-        providerOfferingMapper.deleteProviderOffering(id);
+       int deleted = providerOfferingMapper.deleteProviderOffering(id);
+       if(deleted == 0){
+           throw new ProviderOfferingNotFoundException();
+       }
     }
 }

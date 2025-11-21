@@ -9,6 +9,9 @@ public interface ProviderProfileMapper {
     @Options(useGeneratedKeys = true,keyProperty = "id")
     void registerProviderProfile(ProviderProfile providerProfile);
 
+    @Select("SELECT COUNT(*) FROM provider_profile WHERE business_name = #{businessName}")
+    int getCountByBusinessName(@Param("businessName") String businessName);
+
     @Select("SELECT id, user_id, business_name, address, phone, description, status " +
             "FROM provider_profile " +
             "WHERE id = #{id}")
@@ -26,5 +29,5 @@ public interface ProviderProfileMapper {
     @Select("SELECT * FROM provider_profile WHERE user_id = #{userId}")
     ProviderProfile getByUserId(@Param("userId")Long id);
     @Delete("DELETE FROM provider_profile WHERE id = #{id}")
-    void deleteProviderProfileById(@Param("id")Long id);
+    int deleteProviderProfileById(@Param("id")Long id);
 }

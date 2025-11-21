@@ -1,15 +1,19 @@
 package com.example.provy.User.DTO;
 
-import org.springframework.lang.NonNull;
+import com.example.provy.Common.Validation.ValidPassword;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 
 public class UserRequestDTO {
-    @NonNull
+    @NotNull
+    @Email
     private String email;
-    @NonNull
+    @NotNull
+    @ValidPassword
     private String password;
-    @NonNull
+    @NotNull
     private String ime;
-    @NonNull
+    @NotNull
     private String prezime;
 
     public UserRequestDTO(){

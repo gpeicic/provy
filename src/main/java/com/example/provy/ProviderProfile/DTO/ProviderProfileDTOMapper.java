@@ -19,7 +19,6 @@ public class ProviderProfileDTOMapper {
         ProviderProfile profile = new ProviderProfile();
         profile.setUserId(dto.getUser_id());
         profile.setDescription(dto.getDescription());
-        profile.setStatus(dto.getStatus());
         profile.setPhone(dto.getPhone());
         profile.setAddress(dto.getAddress());
         profile.setBusinessName(dto.getBusinessName());
@@ -34,7 +33,6 @@ public class ProviderProfileDTOMapper {
         dto.setPhone(profile.getPhone());
         dto.setBusinessName(profile.getBusinessName());
         dto.setDescription(profile.getDescription());
-        dto.setStatus(profile.getStatus());
 
         return dto;
     }
