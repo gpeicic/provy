@@ -47,7 +47,6 @@ public class ProviderProfileDTOMapper {
         profileDTO.setAddress(profile.getAddress());
         profileDTO.setPhone(profile.getPhone());
         profileDTO.setDescription(profile.getDescription());
-        profileDTO.setStatus(profile.getStatus());
         dto.setProviderProfile(profileDTO);
 
         dto.setWorkingHours(workingHourService.getByProviderProfileId(profile.getId()));
