@@ -8,6 +8,7 @@ import com.example.provy.user.exception.RoleNotFoundException;
 import com.example.provy.user.exception.UserAlreadyExistsAException;
 import com.example.provy.user.exception.UserNotFoundException;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 @Primary
@@ -18,11 +19,13 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final RoleMapper roleMapper;
     private final UserDTOMapper userDTOMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserMapper userMapper, RoleMapper roleMapper,UserDTOMapper userDTOMapper) {
+    public UserServiceImpl(UserMapper userMapper, RoleMapper roleMapper,UserDTOMapper userDTOMapper, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
         this.roleMapper = roleMapper;
         this.userDTOMapper = userDTOMapper;
+        this.passwordEncoder = passwordEncoder;
     }
     @Override
     public UserResponseDTO getUserById(Long id){
@@ -38,6 +41,7 @@ public class UserServiceImpl implements UserService {
             throw new UserAlreadyExistsAException(userRequestDTO.getEmail());
         }
         User user = userDTOMapper.toEntity(userRequestDTO);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userMapper.registerUser(user);
 
         Long roleUserId = roleMapper.getRoleIdByName("ROLE_USER");

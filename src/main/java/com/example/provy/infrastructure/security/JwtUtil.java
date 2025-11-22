@@ -3,6 +3,8 @@ package com.example.provy.infrastructure.security;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -13,18 +15,24 @@ public class JwtUtil {
     private final SecretKey key;
     private final long expirationMilis;
 
-    public JwtUtil(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") long expirationMilis){
+    public JwtUtil(@Value("${jwt.secret}") String secret, @Value("${jwt.expirationMilis}") long expirationMilis){
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.expirationMilis = expirationMilis;
     }
 
-    public String generateToken(Long userId, String email, List<String> roles){
+    public String generateToken(UserDetails userDetails, Long userId){
         long now = System.currentTimeMillis();
+
+        List<String> roles = userDetails.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
         return Jwts.builder()
-                .subject(email)
+                .subject(userDetails.getUsername())
                 .claim("userId", userId)
                 .claim("roles", roles)
-                .issuedAt(new Date())
+                .issuedAt(new Date(now))
                 .expiration(new Date((now + expirationMilis)))
                 .signWith(key)
                 .compact();
