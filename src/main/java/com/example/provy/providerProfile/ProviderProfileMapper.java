@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.*;
 @Mapper
 public interface ProviderProfileMapper {
     @Insert("INSERT INTO provider_profile(user_id,business_name,address,phone,description) VALUES" +
-            "(#{user_id},#{businessName},#{address},#{phone},#{description})")
+            "(#{userId},#{businessName},#{address},#{phone},#{description})")
     @Options(useGeneratedKeys = true,keyProperty = "id")
     void registerProviderProfile(ProviderProfile providerProfile);
 

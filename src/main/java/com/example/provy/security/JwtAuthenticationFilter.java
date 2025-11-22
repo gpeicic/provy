@@ -1,10 +1,11 @@
-package com.example.provy.infrastructure.security;
+package com.example.provy.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -48,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             var roles = jwtUtil.getRolesFromToken(token);
             var authorities = roles.stream()
-                    .map(role -> new org.springframework.security.core.authority.SimpleGrantedAuthority(role))
+                    .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
 
             var authToken = new UsernamePasswordAuthenticationToken(

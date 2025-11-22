@@ -1,4 +1,4 @@
-package com.example.provy.infrastructure.security;
+package com.example.provy.security;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -13,11 +13,11 @@ import java.util.List;
 @Component
 public class JwtUtil {
     private final SecretKey key;
-    private final long expirationMilis;
+    private final long expirationMillis;
 
-    public JwtUtil(@Value("${jwt.secret}") String secret, @Value("${jwt.expirationMilis}") long expirationMilis){
+    public JwtUtil(@Value("${jwt.secret}") String secret, @Value("${jwt.expirationMillis}") long expirationMillis){
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
-        this.expirationMilis = expirationMilis;
+        this.expirationMillis = expirationMillis;
     }
 
     public String generateToken(UserDetails userDetails, Long userId){
@@ -33,7 +33,7 @@ public class JwtUtil {
                 .claim("userId", userId)
                 .claim("roles", roles)
                 .issuedAt(new Date(now))
-                .expiration(new Date((now + expirationMilis)))
+                .expiration(new Date((now + expirationMillis)))
                 .signWith(key)
                 .compact();
 
@@ -43,7 +43,7 @@ public class JwtUtil {
         return Jwts.parser()
                 .verifyWith(key)
                 .build()
-                .parseEncryptedClaims(token)
+                .parseSignedClaims(token)
                 .getPayload();
     }
 

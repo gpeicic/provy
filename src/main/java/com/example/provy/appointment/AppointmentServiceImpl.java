@@ -8,7 +8,12 @@ import com.example.provy.appointment.exception.InvalidAppointmentTimeException;
 import com.example.provy.providerOffering.ProviderOffering;
 import com.example.provy.providerOffering.ProviderOfferingMapper;
 import com.example.provy.providerProfile.exception.ProviderNotFoundException;
+import com.example.provy.security.CustomUserDetails;
+import com.example.provy.user.User;
+import com.example.provy.user.UserMapper;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +27,16 @@ public class AppointmentServiceImpl implements AppointmentService{
     private final AppointmentMapper appointmentMapper;
     private final AppointmentDTOMapper appointmentDTOMapper;
     private final ProviderOfferingMapper providerOfferingMapper;
+    private final UserMapper userMapper;
 
 
-    public AppointmentServiceImpl(AppointmentMapper appointmentMapper, ProviderOfferingMapper providerOfferingMapper,AppointmentDTOMapper appointmentDTOMapper){
+    public AppointmentServiceImpl(AppointmentMapper appointmentMapper, AppointmentDTOMapper appointmentDTOMapper, ProviderOfferingMapper providerOfferingMapper, UserMapper userMapper) {
         this.appointmentMapper = appointmentMapper;
-        this.providerOfferingMapper = providerOfferingMapper;
         this.appointmentDTOMapper = appointmentDTOMapper;
+        this.providerOfferingMapper = providerOfferingMapper;
+        this.userMapper = userMapper;
     }
+
     @Override
     public AppointmentResponseDTO getById(Long id){
         Appointment appointment = appointmentMapper.getById(id);
@@ -81,9 +89,28 @@ public class AppointmentServiceImpl implements AppointmentService{
     }
     @Override
     public void deleteAppointmentById(Long id){
-       int deleted = appointmentMapper.deleteAppointmentById(id);
-       if(deleted == 0){
+        User user = userMapper.getUserById(id);
+
+        authorizeCurrentUserOrAdmin(user);
+
+        int deleted = appointmentMapper.deleteAppointmentById(id);
+        if(deleted == 0){
            throw new AppointmentNotFoundException(id);
-       }
+        }
+    }
+
+    public static void authorizeCurrentUserOrAdmin(User user) {
+        CustomUserDetails currentUser = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        Long currentUserId = currentUser.getId();
+
+        boolean isAdmin = currentUser.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if(!isAdmin && !user.getId().equals(currentUserId)){
+            throw new AccessDeniedException("You are not allowed to delete this user profile.");
+        }
     }
 }

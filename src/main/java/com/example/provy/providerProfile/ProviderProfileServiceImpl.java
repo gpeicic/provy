@@ -10,16 +10,21 @@ import com.example.provy.providerProfile.exception.ProviderNotFoundException;
 import com.example.provy.providerProfile.providerWorkingHour.ProviderWorkingHour;
 import com.example.provy.providerProfile.providerWorkingHour.ProviderWorkingHourService;
 import com.example.provy.role.RoleMapper;
+import com.example.provy.security.CustomUserDetails;
 import com.example.provy.user.DTO.UserDTOMapper;
 import com.example.provy.user.DTO.UserRequestDTO;
+import com.example.provy.user.UserService;
 import com.example.provy.user.exception.RoleNotFoundException;
 import com.example.provy.user.exception.UserAlreadyExistsAException;
 import com.example.provy.user.User;
 import com.example.provy.user.UserMapper;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.security.access.AccessDeniedException;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.List;
@@ -32,17 +37,21 @@ public class ProviderProfileServiceImpl implements ProviderProfileService{
     private final ProviderProfileMapper providerProfileMapper;
     private final ProviderWorkingHourService providerWorkingHourService;
     private final UserDTOMapper userDTOMapper;
+    private final UserService userService;
     private final ProviderProfileDTOMapper providerProfileDTOMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public ProviderProfileServiceImpl(ProviderProfileMapper providerProfileMapper, UserMapper userMapper, RoleMapper roleMapper,
-                                      ProviderWorkingHourService providerWorkingHourService, ProviderProfileDTOMapper providerProfileDTOMapper,
-                                      UserDTOMapper userDTOMapper){
-        this.providerProfileMapper = providerProfileMapper;
+    public ProviderProfileServiceImpl(UserMapper userMapper, RoleMapper roleMapper, ProviderProfileMapper providerProfileMapper,
+                                      ProviderWorkingHourService providerWorkingHourService, UserDTOMapper userDTOMapper,
+                                      UserService userService, ProviderProfileDTOMapper providerProfileDTOMapper, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
         this.roleMapper = roleMapper;
+        this.providerProfileMapper = providerProfileMapper;
         this.providerWorkingHourService = providerWorkingHourService;
-        this.providerProfileDTOMapper = providerProfileDTOMapper;
         this.userDTOMapper = userDTOMapper;
+        this.userService = userService;
+        this.providerProfileDTOMapper = providerProfileDTOMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -64,20 +73,26 @@ public class ProviderProfileServiceImpl implements ProviderProfileService{
         }
 
         User user =userDTOMapper.toEntity(registerUser);
-        userMapper.registerUser(user);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User registeredUser = userService.registerUser(registerUser);
 
         Long roleProviderId = roleMapper.getRoleIdByName("ROLE_PROVIDER");
+
         if(roleProviderId == null){
             throw new RoleNotFoundException("ROLE_PROVIDER");
         }
-        userMapper.insertUserRole(user.getId(),roleProviderId);
+
+        userMapper.insertUserRole(registeredUser.getId(),roleProviderId);
 
         //creating providerProfile
         ProviderProfileRequestDTO profileDto = request.getProviderProfile();
-        if(providerProfileMapper.getCountByBusinessName(profileDto.getBusinessName()) == 0){
+
+        if(providerProfileMapper.getCountByBusinessName(profileDto.getBusinessName()) > 0){
             throw new ProviderAlreadyExists(profileDto.getBusinessName());
         }
+
         ProviderProfile profile = providerProfileDTOMapper.toEntity(profileDto);
+        profile.setUserId(registeredUser.getId());
         providerProfileMapper.registerProviderProfile(profile);
 
         // Working Hours
@@ -102,10 +117,28 @@ public class ProviderProfileServiceImpl implements ProviderProfileService{
     @Override
     public void deleteProviderProfileById(Long id){
 
+        ProviderProfile profile = providerProfileMapper.getByProviderId(id);
+        if(profile == null){
+            throw new ProviderNotFoundException(id);
+        }
+        CustomUserDetails currentUser = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        Long currentUserId = currentUser.getId();
+
+        boolean isAdmin = currentUser.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if(!isAdmin && !profile.getUserId().equals(currentUserId)){
+            throw new AccessDeniedException("You are not allowed to delete this provider profile.");
+        }
+
         int deleted = providerProfileMapper.deleteProviderProfileById(id);
         if (deleted == 0){
             throw new ProviderNotFoundException(id);
         }
+
     }
 
     private void validateWorkingHour(ProviderWorkingHour h){

@@ -1,4 +1,4 @@
-package com.example.provy.infrastructure.security;
+package com.example.provy.security;
 
 import com.example.provy.role.RoleMapper;
 import com.example.provy.user.User;
@@ -25,7 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException{
-        User user = userMapper.getByEmail(email);
+        User user = userMapper.getUserByEmail(email);
         if(user == null) throw new UsernameNotFoundException("User not found with email: " + email);
 
         List<GrantedAuthority> authorities = roleMapper.getRolesByUserId(user.getId())
@@ -33,7 +33,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .map(SimpleGrantedAuthority :: new)
                 .collect(Collectors.toList());
 
-        return new org.springframework.security.core.userdetails.User(
+        return new CustomUserDetails(
+                user.getId(),
                 user.getEmail(),
                 user.getPassword(),
                 authorities

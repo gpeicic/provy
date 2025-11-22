@@ -5,6 +5,8 @@ import com.example.provy.user.DTO.UserResponseDTO;
 
 public interface UserService {
     UserResponseDTO getUserById(Long id);
-    void registerUser(UserRequestDTO user);
+    User registerUser(UserRequestDTO user);
+
+    User getUserByEmail(String email);
     void deleteUser(Long id);
 }

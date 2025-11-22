@@ -1,5 +1,6 @@
 package com.example.provy.user;
 
+import com.example.provy.appointment.AppointmentServiceImpl;
 import com.example.provy.role.RoleMapper;
 import com.example.provy.user.DTO.UserDTOMapper;
 import com.example.provy.user.DTO.UserRequestDTO;
@@ -29,14 +30,26 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public UserResponseDTO getUserById(Long id){
+
         User user = userMapper.getUserById(id);
         if(user == null){
             throw new UserNotFoundException(id);
         }
+
+        authorizeCurrentUserOrAdmin(user);
+
         return userDTOMapper.toResponseDTO(user);
     }
     @Override
-    public void registerUser(UserRequestDTO userRequestDTO){
+    public User getUserByEmail(String email){
+        User user = userMapper.getUserByEmail(email);
+        if(user == null){
+            throw new UserNotFoundException(user.getId());
+        }
+        return user;
+    }
+    @Override
+    public User registerUser(UserRequestDTO userRequestDTO){
         if(userMapper.getEmailByEmail(userRequestDTO.getEmail()) != null){
             throw new UserAlreadyExistsAException(userRequestDTO.getEmail());
         }
@@ -49,10 +62,18 @@ public class UserServiceImpl implements UserService {
             throw new RoleNotFoundException("ROLE_USER");
         }
         userMapper.insertUserRole(user.getId(),roleUserId);
+        return user;
     }
     @Override
     public void deleteUser(Long id){
+        User user = userMapper.getUserById(id);
+
+        authorizeCurrentUserOrAdmin(user);
+
         int deleted = userMapper.deleteUserById(id);
         if(deleted == 0) throw new UserNotFoundException(id);
+    }
+    private void authorizeCurrentUserOrAdmin(User user) {
+        AppointmentServiceImpl.authorizeCurrentUserOrAdmin(user);
     }
 }

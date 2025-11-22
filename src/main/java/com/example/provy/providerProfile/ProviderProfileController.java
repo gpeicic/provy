@@ -5,6 +5,7 @@ import com.example.provy.providerProfile.DTO.ProviderRegistrationRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,6 +21,7 @@ public class ProviderProfileController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','PROVIDER','ADMIN')")
     public ResponseEntity<ProviderProfileResponseDTO> getByProviderId(@PathVariable Long id){
        ProviderProfileResponseDTO responseDTO = providerProfileService.getByProviderId(id);
         return ResponseEntity.ok(responseDTO);
@@ -30,7 +32,9 @@ public class ProviderProfileController {
         providerProfileService.registerProviderProfile(provider);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('PROVIDER','ADMIN')")
     public ResponseEntity<Void> deleteProviderProfileById(@PathVariable Long id){
         providerProfileService.deleteProviderProfileById(id);
         return ResponseEntity.status(HttpStatus.OK).build();
