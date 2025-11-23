@@ -2,12 +2,17 @@ package com.example.provy.providerProfile;
 
 import org.apache.ibatis.annotations.*;
 
+import java.util.List;
+
 @Mapper
 public interface ProviderProfileMapper {
     @Insert("INSERT INTO provider_profile(user_id,business_name,address,phone,description) VALUES" +
             "(#{userId},#{businessName},#{address},#{phone},#{description})")
     @Options(useGeneratedKeys = true,keyProperty = "id")
     void registerProviderProfile(ProviderProfile providerProfile);
+    @Select("SELECT * FROM provider_profile")
+    @ResultMap("providerProfileMap")
+    List<ProviderProfile> getAllProviders();
 
     @Select("SELECT COUNT(*) FROM provider_profile WHERE business_name = #{businessName}")
     int getCountByBusinessName(@Param("businessName") String businessName);
@@ -15,7 +20,9 @@ public interface ProviderProfileMapper {
     @Select("SELECT id, user_id, business_name, address, phone, description, status " +
             "FROM provider_profile " +
             "WHERE id = #{id}")
-    @Results({
+    @Results(
+            id = "providerProfileMap",
+            value = {
             @Result(property = "id", column = "id"),
             @Result(property = "userId", column = "user_id"),
             @Result(property = "businessName", column = "business_name"),

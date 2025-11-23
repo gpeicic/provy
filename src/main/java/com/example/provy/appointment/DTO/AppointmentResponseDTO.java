@@ -7,7 +7,6 @@ import java.time.LocalTime;
 
 public class AppointmentResponseDTO {
     private Long id;
-    private Long userId;
     private Long providerOfferingId;
     private Long providerProfileId;
     private LocalDate date;
@@ -17,10 +16,9 @@ public class AppointmentResponseDTO {
 
     public AppointmentResponseDTO(){}
 
-    public AppointmentResponseDTO(Long id, Long userId, Long providerOfferingId, Long providerProfileId, LocalDate date,
+    public AppointmentResponseDTO(Long id, Long providerOfferingId, Long providerProfileId, LocalDate date,
                                   LocalTime startTime, LocalTime endTime, AppointmentStatus appointmentStatus) {
         this.id = id;
-        this.userId = userId;
         this.providerOfferingId = providerOfferingId;
         this.providerProfileId = providerProfileId;
         this.date = date;
@@ -37,13 +35,6 @@ public class AppointmentResponseDTO {
         this.id = id;
     }
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
 
     public Long getProviderOfferingId() {
         return providerOfferingId;

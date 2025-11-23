@@ -8,9 +8,9 @@ import java.time.LocalTime;
 
 @Component
 public class AppointmentDTOMapper {
-    public Appointment toEntity(AppointmentRequestDTO dto, Long providerProfileId, LocalTime endTime){
+    public Appointment toEntity(AppointmentRequestDTO dto, Long providerProfileId, LocalTime endTime,Long userId){
         Appointment appointment = new Appointment();
-        appointment.setUserId(dto.getUserId());
+        appointment.setUserId(userId);
         appointment.setProviderOfferingId(dto.getProviderOfferingId());
         appointment.setProviderProfileId(providerProfileId);
         appointment.setDate(dto.getDate());
@@ -21,24 +21,10 @@ public class AppointmentDTOMapper {
         return appointment;
     }
 
-    public Appointment toEntity(AppointmentResponseDTO dto){
-        Appointment appointment = new Appointment(
-                dto.getId(),
-                dto.getUserId(),
-                dto.getProviderProfileId(),
-                dto.getProviderOfferingId(),
-                dto.getStartTime(),
-                dto.getEndTime(),
-                dto.getDate(),
-                dto.getAppointmentStatus()
-        );
-        return appointment;
-    }
 
     public AppointmentResponseDTO toResponseDTO(Appointment appointment){
         AppointmentResponseDTO dto = new AppointmentResponseDTO(
                 appointment.getId(),
-                appointment.getUserId(),
                 appointment.getProviderOfferingId(),
                 appointment.getProviderProfileId(),
                 appointment.getDate(),

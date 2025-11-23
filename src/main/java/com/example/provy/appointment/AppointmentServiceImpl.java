@@ -8,17 +8,16 @@ import com.example.provy.appointment.exception.InvalidAppointmentTimeException;
 import com.example.provy.providerOffering.ProviderOffering;
 import com.example.provy.providerOffering.ProviderOfferingMapper;
 import com.example.provy.providerProfile.exception.ProviderNotFoundException;
+import com.example.provy.security.AuthorizationService;
 import com.example.provy.security.CustomUserDetails;
-import com.example.provy.user.User;
-import com.example.provy.user.UserMapper;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Primary
 @Transactional
@@ -27,14 +26,16 @@ public class AppointmentServiceImpl implements AppointmentService{
     private final AppointmentMapper appointmentMapper;
     private final AppointmentDTOMapper appointmentDTOMapper;
     private final ProviderOfferingMapper providerOfferingMapper;
-    private final UserMapper userMapper;
+    private final AppointmentValidator appointmentValidator;
+    private static final String APPOINTMENT_DELETE_ERROR ="You are not allowed to delete this appointment.";
 
 
-    public AppointmentServiceImpl(AppointmentMapper appointmentMapper, AppointmentDTOMapper appointmentDTOMapper, ProviderOfferingMapper providerOfferingMapper, UserMapper userMapper) {
+    public AppointmentServiceImpl(AppointmentMapper appointmentMapper, AppointmentDTOMapper appointmentDTOMapper,
+                                  ProviderOfferingMapper providerOfferingMapper, AppointmentValidator appointmentValidator) {
         this.appointmentMapper = appointmentMapper;
         this.appointmentDTOMapper = appointmentDTOMapper;
         this.providerOfferingMapper = providerOfferingMapper;
-        this.userMapper = userMapper;
+        this.appointmentValidator = appointmentValidator;
     }
 
     @Override
@@ -46,7 +47,21 @@ public class AppointmentServiceImpl implements AppointmentService{
         return appointmentDTOMapper.toResponseDTO(appointment);
     }
     @Override
+    public  List<AppointmentResponseDTO> getAllByProvider(Long providerId){
+        List<AppointmentResponseDTO> appointments = appointmentMapper.getAppointmentsByProvider(providerId).stream()
+                .map(appointmentDTOMapper :: toResponseDTO)
+                .collect(Collectors.toList());
+        return  appointments;
+    }
+
+    @Override
     public void bookAppointment(AppointmentRequestDTO appointmentRequestDTO){
+        CustomUserDetails currentUser = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        Long userId = currentUser.getId();
+
         ProviderOffering providerOffering = providerOfferingMapper.getById(appointmentRequestDTO.getProviderOfferingId());
 
         if(providerOffering == null){
@@ -61,37 +76,21 @@ public class AppointmentServiceImpl implements AppointmentService{
         Appointment appointment = appointmentDTOMapper.toEntity(
                 appointmentRequestDTO,
                 providerOffering.getProviderProfileId(),
-                endTime
+                endTime,
+                userId
         );
 
-        if(!isAppointmentAvailable(appointment)){
-            throw new InvalidAppointmentTimeException("The appointment slot from " + appointment.getStartTime()
-                    + " to " + appointment.getEndTime() + " is already taken");
-        }
+        appointmentValidator.isAppointmentAvailable(appointment);
+
         appointment.setAppointmentStatus(AppointmentStatus.CONFIRMED);
         appointmentMapper.bookAppointment(appointment);
     }
-    @Override
-    public Boolean isAppointmentAvailable(Appointment appointment){
-        List<Appointment> appointments = appointmentMapper.getAppointmentsByProvider(appointment.getProviderProfileId());
-        for(Appointment a : appointments){
-           boolean sameDate = a.getDate().isEqual(appointment.getDate());
-           boolean confirmed = a.getAppointmentStatus() == AppointmentStatus.CONFIRMED;
-           boolean overlaps = !appointment.getEndTime().isBefore(a.getStartTime()) &&
-                   !appointment.getStartTime().isAfter(a.getEndTime());
 
-           if(sameDate && confirmed && overlaps){
-               return Boolean.FALSE;
-           }
-        }
-
-        return Boolean.TRUE;
-    }
     @Override
     public void deleteAppointmentById(Long id){
-        User user = userMapper.getUserById(id);
+        Appointment appointment = appointmentMapper.getById(id);
 
-        authorizeCurrentUserOrAdmin(user);
+        AuthorizationService.authorizeCurrentUserOrAdmin(appointment.getUserId(),APPOINTMENT_DELETE_ERROR);
 
         int deleted = appointmentMapper.deleteAppointmentById(id);
         if(deleted == 0){
@@ -99,18 +98,4 @@ public class AppointmentServiceImpl implements AppointmentService{
         }
     }
 
-    public static void authorizeCurrentUserOrAdmin(User user) {
-        CustomUserDetails currentUser = (CustomUserDetails) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
-        Long currentUserId = currentUser.getId();
-
-        boolean isAdmin = currentUser.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        if(!isAdmin && !user.getId().equals(currentUserId)){
-            throw new AccessDeniedException("You are not allowed to delete this user profile.");
-        }
-    }
 }

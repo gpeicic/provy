@@ -2,11 +2,15 @@ package com.example.provy.user;
 
 import org.apache.ibatis.annotations.*;
 
+import java.util.List;
+
 
 @Mapper
 public interface UserMapper {
     @Select("SELECT * FROM \"user\" WHERE id = #{id}")
     User getUserById(Long id);
+    @Select("SELECT * FROM \"user\"")
+    List<User> getAllUsers();
     @Insert("INSERT INTO \"user\"(email,password,ime,prezime) VALUES(#{email},#{password},#{ime},#{prezime})")
     @Options(useGeneratedKeys = true,keyProperty = "id")
     void registerUser(User user);

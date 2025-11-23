@@ -8,6 +8,7 @@ import com.example.provy.providerOffering.exception.ProviderOfferingNotFoundExce
 import com.example.provy.providerProfile.DTO.ProviderProfileResponseDTO;
 import com.example.provy.providerProfile.ProviderProfile;
 import com.example.provy.providerProfile.ProviderProfileService;
+import com.example.provy.security.AuthorizationService;
 import com.example.provy.security.CustomUserDetails;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.access.AccessDeniedException;
@@ -21,13 +22,16 @@ public class ProviderOfferingServiceImpl implements ProviderOfferingService {
     private final ProviderOfferingMapper providerOfferingMapper;
     private final ProviderProfileService providerProfileService;
     private final ProviderOfferingDTOMapper providerOfferingDTOMapper;
-
+    private final ProviderOfferingFactory providerOfferingFactory;
+    private final static String PROVIDER_PROFILE_OFFERING_DELETE_ERROR = "You do not have permission to delete this provider offering.";
     public ProviderOfferingServiceImpl(ProviderOfferingMapper providerOfferingMapper,
                                        ProviderProfileService providerProfileService,
-                                       ProviderOfferingDTOMapper providerOfferingDTOMapper) {
+                                       ProviderOfferingDTOMapper providerOfferingDTOMapper,
+                                       ProviderOfferingFactory providerOfferingFactory) {
         this.providerOfferingMapper = providerOfferingMapper;
         this.providerProfileService = providerProfileService;
         this.providerOfferingDTOMapper = providerOfferingDTOMapper;
+        this.providerOfferingFactory = providerOfferingFactory;
     }
 
     @Override
@@ -36,8 +40,7 @@ public class ProviderOfferingServiceImpl implements ProviderOfferingService {
         if(offering == null){
             throw new ProviderOfferingNotFoundException();
         }
-        ProviderOfferingResponseDTO providerOfferingResponse =providerOfferingDTOMapper.toResponseDTO(providerOfferingMapper.getById(id));
-        return providerOfferingResponse;
+        return providerOfferingDTOMapper.toResponseDTO(providerOfferingMapper.getById(id));
     }
     @Override
     public ProviderOfferingResponseDTO getByProviderProfileId(Long id){
@@ -50,29 +53,14 @@ public class ProviderOfferingServiceImpl implements ProviderOfferingService {
     }
     @Override
     public void registerProviderOffering(ProviderOfferingRequestDTO providerOfferingRequest){
-        if(providerOfferingMapper.getCountByProviderIdAndName(providerOfferingRequest.getProviderProfileId(), providerOfferingRequest.getName()) == 0){
-            throw new ProviderOfferingAlreadyExistsException(providerOfferingRequest.getName());
-        }
-        providerOfferingMapper.registerProviderOffering(providerOfferingDTOMapper.toEntity(providerOfferingRequest));
+        ProviderOffering offering = providerOfferingFactory.create(providerOfferingRequest);
+        providerOfferingMapper.registerProviderOffering(offering);
     }
     @Override
     public void deleteProviderOffering(Long id){
         ProviderOffering offering = providerOfferingMapper.getById(id);
         ProviderProfileResponseDTO profile = providerProfileService.getByProviderId(offering.getProviderProfileId());
-
-        CustomUserDetails currentUser = (CustomUserDetails) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
-        Long currentUserId = currentUser.getId();
-
-        boolean isAdmin = currentUser.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        if(!isAdmin && !profile.getProviderProfile().getUser_id().equals(currentUserId)){
-            throw new AccessDeniedException("You are not allowed to delete this provider offering.");
-        }
-
+        AuthorizationService.authorizeCurrentUserOrAdmin(profile.getUser().getId(), PROVIDER_PROFILE_OFFERING_DELETE_ERROR );
 
        int deleted = providerOfferingMapper.deleteProviderOffering(id);
        if(deleted == 0){

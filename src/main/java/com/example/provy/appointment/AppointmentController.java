@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/appointments")
 public class AppointmentController {
@@ -21,6 +23,12 @@ public class AppointmentController {
     public ResponseEntity<AppointmentResponseDTO> getById(@PathVariable Long id){
         AppointmentResponseDTO appointment = appointmentService.getById(id);
         return ResponseEntity.ok(appointment);
+    }
+    @GetMapping("/provider/{id}")
+    @PreAuthorize("hasAnyRole('USER','PROVIDER','ADMIN')")
+    public ResponseEntity<List<AppointmentResponseDTO>> getAllByProviderId(@PathVariable Long id){
+        List<AppointmentResponseDTO> appointments = appointmentService.getAllByProvider(id);
+        return ResponseEntity.status(HttpStatus.OK).body(appointments);
     }
 
     @PostMapping

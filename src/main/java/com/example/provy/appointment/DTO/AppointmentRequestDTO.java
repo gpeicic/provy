@@ -7,8 +7,6 @@ import java.time.LocalTime;
 
 public class AppointmentRequestDTO {
     @NotNull
-    private Long userId;
-    @NotNull
     private Long providerOfferingId;
     @NotNull
     private LocalDate date;
@@ -19,18 +17,9 @@ public class AppointmentRequestDTO {
     }
 
     public AppointmentRequestDTO(@NotNull Long userId, @NotNull Long providerOfferingId, @NotNull LocalDate date, @NotNull LocalTime startTime) {
-        this.userId = userId;
         this.providerOfferingId = providerOfferingId;
         this.date = date;
         this.startTime = startTime;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
     }
 
     public Long getProviderOfferingId() {

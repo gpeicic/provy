@@ -1,15 +1,11 @@
 package com.example.provy.user;
 
-import com.example.provy.appointment.AppointmentServiceImpl;
-import com.example.provy.role.RoleMapper;
+import com.example.provy.security.AuthorizationService;
 import com.example.provy.user.DTO.UserDTOMapper;
 import com.example.provy.user.DTO.UserRequestDTO;
 import com.example.provy.user.DTO.UserResponseDTO;
-import com.example.provy.user.exception.RoleNotFoundException;
-import com.example.provy.user.exception.UserAlreadyExistsAException;
 import com.example.provy.user.exception.UserNotFoundException;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 @Primary
@@ -18,16 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
-    private final RoleMapper roleMapper;
     private final UserDTOMapper userDTOMapper;
-    private final PasswordEncoder passwordEncoder;
+    private final UserRegistrationService userRegistrationService;
 
-    public UserServiceImpl(UserMapper userMapper, RoleMapper roleMapper,UserDTOMapper userDTOMapper, PasswordEncoder passwordEncoder) {
+    private static final String USER_AUTHORIZE_ERROR = "You do not have permission to access this user.";
+    private static final String USER_PROFILE_DELETE_ERROR = "You are not allowed to delete this user profile.";
+
+    public UserServiceImpl(UserMapper userMapper, UserDTOMapper userDTOMapper, UserRegistrationService userRegistrationService) {
         this.userMapper = userMapper;
-        this.roleMapper = roleMapper;
         this.userDTOMapper = userDTOMapper;
-        this.passwordEncoder = passwordEncoder;
+        this.userRegistrationService = userRegistrationService;
     }
+
     @Override
     public UserResponseDTO getUserById(Long id){
 
@@ -36,7 +34,7 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException(id);
         }
 
-        authorizeCurrentUserOrAdmin(user);
+        AuthorizationService.authorizeCurrentUserOrAdmin(id,USER_AUTHORIZE_ERROR);
 
         return userDTOMapper.toResponseDTO(user);
     }
@@ -44,36 +42,24 @@ public class UserServiceImpl implements UserService {
     public User getUserByEmail(String email){
         User user = userMapper.getUserByEmail(email);
         if(user == null){
-            throw new UserNotFoundException(user.getId());
+            throw new UserNotFoundException(0L);
         }
         return user;
     }
     @Override
     public User registerUser(UserRequestDTO userRequestDTO){
-        if(userMapper.getEmailByEmail(userRequestDTO.getEmail()) != null){
-            throw new UserAlreadyExistsAException(userRequestDTO.getEmail());
-        }
-        User user = userDTOMapper.toEntity(userRequestDTO);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userMapper.registerUser(user);
-
-        Long roleUserId = roleMapper.getRoleIdByName("ROLE_USER");
-        if(roleUserId == null){
-            throw new RoleNotFoundException("ROLE_USER");
-        }
-        userMapper.insertUserRole(user.getId(),roleUserId);
-        return user;
+        return userRegistrationService.registerUser(userRequestDTO);
     }
     @Override
     public void deleteUser(Long id){
-        User user = userMapper.getUserById(id);
-
-        authorizeCurrentUserOrAdmin(user);
+        AuthorizationService.authorizeCurrentUserOrAdmin(id, USER_PROFILE_DELETE_ERROR);
 
         int deleted = userMapper.deleteUserById(id);
         if(deleted == 0) throw new UserNotFoundException(id);
     }
-    private void authorizeCurrentUserOrAdmin(User user) {
-        AppointmentServiceImpl.authorizeCurrentUserOrAdmin(user);
+    @Override
+    public void insertRole(Long userId, Long roleId){
+        userMapper.insertUserRole(userId, roleId);
     }
+
 }

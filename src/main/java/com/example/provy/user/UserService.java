@@ -9,4 +9,5 @@ public interface UserService {
 
     User getUserByEmail(String email);
     void deleteUser(Long id);
+    void insertRole(Long userId, Long roleId);
 }
