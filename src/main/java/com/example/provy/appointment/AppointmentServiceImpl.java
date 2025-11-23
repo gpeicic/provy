@@ -5,6 +5,7 @@ import com.example.provy.appointment.DTO.AppointmentRequestDTO;
 import com.example.provy.appointment.DTO.AppointmentResponseDTO;
 import com.example.provy.appointment.exception.AppointmentNotFoundException;
 import com.example.provy.appointment.exception.InvalidAppointmentTimeException;
+import com.example.provy.notification.NotificationService;
 import com.example.provy.providerOffering.ProviderOffering;
 import com.example.provy.providerOffering.ProviderOfferingMapper;
 import com.example.provy.providerProfile.exception.ProviderNotFoundException;
@@ -27,15 +28,17 @@ public class AppointmentServiceImpl implements AppointmentService{
     private final AppointmentDTOMapper appointmentDTOMapper;
     private final ProviderOfferingMapper providerOfferingMapper;
     private final AppointmentValidator appointmentValidator;
+    private final NotificationService notificationService;
     private static final String APPOINTMENT_DELETE_ERROR ="You are not allowed to delete this appointment.";
 
 
     public AppointmentServiceImpl(AppointmentMapper appointmentMapper, AppointmentDTOMapper appointmentDTOMapper,
-                                  ProviderOfferingMapper providerOfferingMapper, AppointmentValidator appointmentValidator) {
+                                  ProviderOfferingMapper providerOfferingMapper, AppointmentValidator appointmentValidator, NotificationService notificationService) {
         this.appointmentMapper = appointmentMapper;
         this.appointmentDTOMapper = appointmentDTOMapper;
         this.providerOfferingMapper = providerOfferingMapper;
         this.appointmentValidator = appointmentValidator;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -84,6 +87,7 @@ public class AppointmentServiceImpl implements AppointmentService{
 
         appointment.setAppointmentStatus(AppointmentStatus.CONFIRMED);
         appointmentMapper.bookAppointment(appointment);
+        notificationService.createNotificationsForAppointment(appointment);
     }
 
     @Override
