@@ -3,7 +3,6 @@ package com.example.provy.admin;
 import com.example.provy.providerProfile.DTO.ProviderProfileResponseDTO;
 import com.example.provy.user.DTO.UserRequestDTO;
 import com.example.provy.user.DTO.UserResponseDTO;
-import com.example.provy.user.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
