@@ -5,12 +5,10 @@ import com.example.provy.providerProfile.DTO.ProviderProfileResponseDTO;
 import com.example.provy.providerProfile.DTO.ProviderRegistrationRequest;
 import com.example.provy.providerProfile.exception.ProviderNotFoundException;
 import com.example.provy.security.AuthorizationService;
-import com.example.provy.security.CustomUserDetails;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.access.AccessDeniedException;
+
 
 @Primary
 @Service
