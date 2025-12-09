@@ -3,16 +3,11 @@ package com.example.provy.providerOffering;
 import com.example.provy.providerOffering.DTO.ProviderOfferingDTOMapper;
 import com.example.provy.providerOffering.DTO.ProviderOfferingRequestDTO;
 import com.example.provy.providerOffering.DTO.ProviderOfferingResponseDTO;
-import com.example.provy.providerOffering.exception.ProviderOfferingAlreadyExistsException;
 import com.example.provy.providerOffering.exception.ProviderOfferingNotFoundException;
 import com.example.provy.providerProfile.DTO.ProviderProfileResponseDTO;
-import com.example.provy.providerProfile.ProviderProfile;
 import com.example.provy.providerProfile.ProviderProfileService;
 import com.example.provy.security.AuthorizationService;
-import com.example.provy.security.CustomUserDetails;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 @Primary
