@@ -5,7 +5,6 @@ import com.example.provy.providerOffering.DTO.ProviderOfferingRequestDTO;
 import com.example.provy.providerOffering.DTO.ProviderOfferingResponseDTO;
 import com.example.provy.providerOffering.exception.ProviderOfferingNotFoundException;
 import com.example.provy.providerProfile.DTO.ProviderProfileResponseDTO;
-import com.example.provy.providerProfile.ProviderProfile;
 import com.example.provy.providerProfile.ProviderProfileService;
 import com.example.provy.security.AuthorizationService;
 import com.example.provy.user.DTO.UserResponseDTO;
@@ -13,11 +12,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
