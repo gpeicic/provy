@@ -17,7 +17,6 @@ public class NotificationScheduler {
         List<Notification> pendingNotifications = notificationMapper.getAllPendingNotifications();
 
         for(Notification n : pendingNotifications){
-            //tu ce ici logika
             System.out.println(n.getMessage());
             notificationMapper.markAsSent(n.getId());
         }
