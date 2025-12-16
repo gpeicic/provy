@@ -5,6 +5,9 @@ import com.example.provy.providerProfile.DTO.ProviderProfileResponseDTO;
 import com.example.provy.providerProfile.DTO.ProviderRegistrationRequest;
 import com.example.provy.providerProfile.exception.ProviderNotFoundException;
 import com.example.provy.security.AuthorizationService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +31,7 @@ public class ProviderProfileServiceImpl implements ProviderProfileService{
     }
 
     @Override
+    @Cacheable(value = "providerProfiles", key = "#id")
     public ProviderProfileResponseDTO getByProviderId(Long id){
         ProviderProfile profile = providerProfileMapper.getByProviderId(id);
         if(profile == null){
@@ -37,12 +41,14 @@ public class ProviderProfileServiceImpl implements ProviderProfileService{
         return providerProfileDTOMapper.toResponseDTO(providerProfileMapper.getByProviderId(id));
     }
     @Override
+    @CachePut(value = "providerProfiles", key = "#result.providerId")
     public ProviderProfile registerProviderProfile(ProviderRegistrationRequest request){
         return providerRegistrationService.registerProvider(request);
     }
 
 
     @Override
+    @CacheEvict(value = "providerProfiles", key = "#id")
     public void deleteProviderProfileById(Long id){
         ProviderProfile profile = providerProfileMapper.getByProviderId(id);
         AuthorizationService.authorizeCurrentUserOrAdmin(profile.getUserId(), PROVIDER_PROFILE_DELETE_ERROR);

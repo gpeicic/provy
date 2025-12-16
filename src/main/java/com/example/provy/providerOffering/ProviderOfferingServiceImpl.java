@@ -7,6 +7,8 @@ import com.example.provy.providerOffering.exception.ProviderOfferingNotFoundExce
 import com.example.provy.providerProfile.DTO.ProviderProfileResponseDTO;
 import com.example.provy.providerProfile.ProviderProfileService;
 import com.example.provy.security.AuthorizationService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,7 @@ public class ProviderOfferingServiceImpl implements ProviderOfferingService {
     }
 
     @Override
+    @Cacheable(value = "providerOfferings", key = "'id:' + #id")
     public ProviderOfferingResponseDTO getById(Long id){
         ProviderOffering offering = providerOfferingMapper.getById(id);
         if(offering == null){
@@ -38,6 +41,7 @@ public class ProviderOfferingServiceImpl implements ProviderOfferingService {
         return providerOfferingDTOMapper.toResponseDTO(providerOfferingMapper.getById(id));
     }
     @Override
+    @Cacheable(value = "providerOfferings", key = "'profile:' + #id")
     public ProviderOfferingResponseDTO getByProviderProfileId(Long id){
         ProviderOfferingResponseDTO providerOfferingResponse = providerOfferingDTOMapper.toResponseDTO(providerOfferingMapper.getByProviderProfileId(id));
         if(providerOfferingResponse == null){
@@ -47,11 +51,13 @@ public class ProviderOfferingServiceImpl implements ProviderOfferingService {
         return providerOfferingResponse;
     }
     @Override
+    @CacheEvict(value = "providerOfferings", allEntries = true)
     public void registerProviderOffering(ProviderOfferingRequestDTO providerOfferingRequest){
         ProviderOffering offering = providerOfferingFactory.create(providerOfferingRequest);
         providerOfferingMapper.registerProviderOffering(offering);
     }
     @Override
+    @CacheEvict(value = "providerOfferings", allEntries = true)
     public void deleteProviderOffering(Long id){
         ProviderOffering offering = providerOfferingMapper.getById(id);
         ProviderProfileResponseDTO profile = providerProfileService.getByProviderId(offering.getProviderProfileId());
