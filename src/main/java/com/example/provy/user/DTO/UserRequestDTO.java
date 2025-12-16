@@ -15,15 +15,26 @@ public class UserRequestDTO {
     private String ime;
     @NotNull
     private String prezime;
+    @NotNull
+    private String adresa;
 
     public UserRequestDTO(){
     }
 
-    public UserRequestDTO(String email, String password, String ime, String prezime) {
+    public UserRequestDTO(String email, String password, String ime, String prezime,String adresa  ) {
         this.email = email;
         this.password = password;
         this.ime = ime;
         this.prezime = prezime;
+        this.adresa = adresa;
+    }
+
+    public String getAdresa() {
+        return adresa;
+    }
+
+    public void setAdresa(String adresa) {
+        this.adresa = adresa;
     }
 
     public String getEmail() {
