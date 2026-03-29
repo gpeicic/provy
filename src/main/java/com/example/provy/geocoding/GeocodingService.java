@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GeocodingService {
-    private final String apiKey = "YOUR_API_KEY"; // po mogućnosti iz application.properties
+    private final String apiKey = "YOUR_API_KEY";
 
     private final RestTemplate restTemplate = new RestTemplate();
 
