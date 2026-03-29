@@ -1,4 +1,4 @@
-## PROVY
+## Provy
 Backend za platformu koja povezuje pružatelje uslužnih djelatnosti 
 (frizerski saloni, kozmetički saloni i sl.) s korisnicima koji žele 
 rezervirati termin online.
